@@ -202,7 +202,62 @@ If your environment blocks npm registry, install through your internal mirror/ar
 
 ---
 
-## 10) Integration notes when copying to another codebase
+
+## 10) Deploy on Vercel
+
+### A. Create project
+1. Push repository to GitHub/GitLab/Bitbucket.
+2. Import project in Vercel.
+3. Framework preset: **Next.js**.
+
+### B. Configure Environment Variables (Vercel Project Settings)
+Add all required values for each environment (Preview/Production):
+
+- `DATABASE_URL`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRICE_PRO`
+- `STRIPE_PRICE_FINTECH`
+- `RESEND_API_KEY`
+- `NEXT_PUBLIC_APP_URL` (set to your Vercel domain/custom domain, e.g. `https://app.yourdomain.com`)
+
+> Important: webhook/worker secrets must only exist server-side. Never expose them to client code.
+
+### C. Run DB migration before go-live
+Apply `db/migrations/001_subscription_platform.sql` to your production Postgres/Supabase.
+
+### D. Configure Stripe webhook to Vercel URL
+In Stripe Dashboard, set endpoint to:
+
+- `https://<your-vercel-domain>/api/stripe/webhook`
+
+Subscribe to:
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+
+Copy webhook signing secret to `STRIPE_WEBHOOK_SECRET` in Vercel.
+
+### E. Configure email worker on Vercel (cron)
+Because outbox sending is decoupled, schedule a recurring job every 30–60 seconds.
+
+Recommended pattern on Vercel:
+1. Add a protected route/handler that triggers `processEmailOutboxBatch(...)`.
+2. Configure Vercel Cron to call that route periodically.
+3. Protect it with a secret header/token checked server-side.
+
+If Vercel plan limits cron frequency, run worker from an external scheduler (e.g., GitHub Actions, Fly, Railway, or a small worker service) pointing to the same DB.
+
+### F. Post-deploy smoke checks
+1. Open `/pricing` and `/dashboard`.
+2. Create Stripe checkout from your app.
+3. Confirm webhook events recorded in `stripe_events`.
+4. Confirm `profiles` transitions update deterministically.
+5. Confirm `email_jobs` move `pending -> sent` (or `dead_letter` on repeated failure).
+
+---
+
+## 11) Integration notes when copying to another codebase
 
 - Keep `types/subscription.ts` and DB enum values in sync.
 - Keep all subscription mutations in `processor.ts` transaction boundary.
