@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { getProfileSubscriptionState } from "@/lib/subscription/service";
 
-export const dynamic = "force-dynamic";
-
 function tierFeatures(plan: string): string[] {
   if (plan === "fintech") return ["Compliance report API", "Risk analytics API", "Priority queue"];
   if (plan === "pro") return ["Pro analytics API", "Team dashboard"];
@@ -12,16 +10,10 @@ function tierFeatures(plan: string): string[] {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams?: { profileId?: string };
+  searchParams: Promise<{ profileId?: string }>;
 }) {
-  const profileId = searchParams?.profileId ?? "00000000-0000-0000-0000-000000000000";
-
-  let profile = null;
-  try {
-    profile = await getProfileSubscriptionState(profileId);
-  } catch {
-    profile = null;
-  }
+  const { profileId = "00000000-0000-0000-0000-000000000000" } = await searchParams;
+  const profile = await getProfileSubscriptionState(profileId);
 
   return (
     <main>

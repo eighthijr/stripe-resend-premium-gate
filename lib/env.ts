@@ -12,10 +12,4 @@ const envSchema = z.object({
 
 export type AppEnv = z.infer<typeof envSchema>;
 
-let cachedEnv: AppEnv | null = null;
-
-export function getEnv(): AppEnv {
-  if (cachedEnv) return cachedEnv;
-  cachedEnv = envSchema.parse(process.env);
-  return cachedEnv;
-}
+export const env: AppEnv = envSchema.parse(process.env);

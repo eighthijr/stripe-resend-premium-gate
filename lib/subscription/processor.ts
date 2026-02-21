@@ -1,5 +1,5 @@
 import { PoolClient } from "pg";
-import { getEnv } from "@/lib/env";
+import { env } from "@/lib/env";
 import { queueEmailJob } from "@/lib/email/outbox";
 import { withSerializableTransaction } from "@/lib/db";
 import { applySubscriptionTransition } from "@/lib/subscription/transition";
@@ -23,7 +23,6 @@ export async function processStripeSubscriptionEvent(event: StripeSubscriptionEv
     }
 
     const current = await getOrCreateProfileForUpdate(client, event.profileId);
-    const env = getEnv();
     const transition = applySubscriptionTransition(current, event, {
       proPriceId: env.STRIPE_PRICE_PRO,
       fintechPriceId: env.STRIPE_PRICE_FINTECH,

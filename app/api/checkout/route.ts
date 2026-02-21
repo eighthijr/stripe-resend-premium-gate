@@ -1,9 +1,7 @@
-export const runtime = "nodejs";
-
 import { NextRequest, NextResponse } from "next/server";
-import { getStripe, derivePriceIdForTier } from "@/lib/stripe";
+import { stripe, derivePriceIdForTier } from "@/lib/stripe";
 import { Tier } from "@/types/subscription";
-import { getEnv } from "@/lib/env";
+import { env } from "@/lib/env";
 
 interface CheckoutBody {
   tier: Tier;
@@ -22,9 +20,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   assertPaidTier(body.tier);
 
   const priceId = derivePriceIdForTier(body.tier);
-
-  const env = getEnv();
-  const stripe = getStripe();
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
