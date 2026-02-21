@@ -10,10 +10,16 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "jsx": "preserve",
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true,
+    "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "plugins": [{ "name": "next" }]
   },
-  "include": ["app/**/*", "lib/**/*", "types/**/*", "scripts/**/*"]
+  "include": ["next-env.d.ts", "app/**/*", "lib/**/*", "types/**/*", "scripts/**/*", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }
