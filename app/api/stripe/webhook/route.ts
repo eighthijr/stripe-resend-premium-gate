@@ -1,9 +1,7 @@
-export const runtime = "nodejs";
-
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { getStripe } from "@/lib/stripe";
-import { getEnv } from "@/lib/env";
+import { stripe } from "@/lib/stripe";
+import { env } from "@/lib/env";
 import { processStripeSubscriptionEvent } from "@/lib/subscription/processor";
 import { StripeSubscriptionEvent } from "@/types/subscription";
 
@@ -47,8 +45,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   let event: Stripe.Event;
 
   try {
-    const env = getEnv();
-    const stripe = getStripe();
     event = stripe.webhooks.constructEvent(rawBody, signature, env.STRIPE_WEBHOOK_SECRET);
   } catch {
     return NextResponse.json({ error: "Invalid Stripe signature" }, { status: 400 });
